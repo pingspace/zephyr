@@ -81,7 +81,7 @@ static int stm32h7_init(const struct device *arg)
 	SCB_EnableICache();
 
 	if (!(SCB->CCR & SCB_CCR_DC_Msk)) {
-		SCB_EnableDCache();
+		//SCB_EnableDCache();
 	}
 
 	/* Install default handler that simply resets the CPU
