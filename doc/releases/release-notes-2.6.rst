@@ -159,6 +159,12 @@ Stable API changes in this release
 Kernel
 ******
 
+* Added :c:func:`k_mem_unmap()` so anonymous memory mapped via :c:func:`k_mem_map()`
+  can be unmapped and virtual address reclaimed.
+
+* Added the ability to gather more statistics for demand paging, including execution
+  time histograms for eviction algorithms and backing stores.
+
 Architectures
 *************
 
@@ -176,11 +182,45 @@ Architectures
 
   * AARCH64
 
+    * SMP support
+
+    * MMU dynamic mappings with page table sharing.
+
+    * Userspace (unprivileged) thread support.
+
+    * Standalone SMCCC support.
+
+    * XIP support.
+
+    * ARM64 is now a top-level standalone architecture.
+
+    * Support for Cortex-R82 and Armv8-R AArch64 MPU.
+
+    * Cache management support.
+
+    * Revamped boot code.
+
+    * Full FPU context switching.
+
 * POSIX
 
 * RISC-V
 
 * x86
+
+  * Added SoC configuration for Lakemont SoC.
+
+  * Removed kconfig ``CONFIG_CPU_MINUTEIA`` as there is no user of this option.
+
+  * Renamed kconfig ``CONFIG_SSE*`` to ``CONFIG_X86_SSE*``.
+
+  * Extended the pagetable generation script to allow specifying additional
+    memory mapping during build.
+
+  * x86-32
+
+    * Added support for kernel image to reside in virtual address space, allowing
+      code execution and data manipulation via virtual addresses.
 
 Boards & SoC Support
 ********************
@@ -193,11 +233,19 @@ Boards & SoC Support
 
 * Made these changes in other SoC series:
 
+  * Added Cypress PSoC-6 pinctrl support.
+
 * Changes for ARC boards:
 
 * Added support for these ARM boards:
 
    * MPS3-AN547
+
+* Added support for these ARM64 boards:
+
+   * fvp_base_revc_2xaemv8a
+   * fvp_baser_aemv8r
+   * nxp_ls1046ardb
 
 * Removed support for these ARM boards:
 
@@ -205,6 +253,13 @@ Boards & SoC Support
    * Nordic nRF5340 PDK
 
 * Made these changes in other boards:
+
+  * cy8ckit_062_ble: Refactored to configure by pinctrl.
+  * cy8ckit_062_ble: Added support to SCB[uart] with interrupt.
+  * cy8ckit_062_ble: Added support to SCB[spi].
+  * cy8ckit_062_ble: Added board revision schema.
+  * cy8ckit_062_wifi_bt: Refactored to configure by pinctrl.
+  * cy8ckit_062_wifi_bt: Added support to SCB[uart] with interrupt.
 
 * Added support for these following shields:
 
@@ -286,6 +341,13 @@ Drivers and Sensors
 
 * IEEE 802.15.4
 
+  * rf2xx:
+
+    * Added support for tx mode direct.
+    * Added support for tx mode CCA.
+    * Added support to enable promiscuous mode.
+    * Added support to enable pan coordinator mode.
+
 * Interrupt Controller
 
 * IPM
@@ -312,7 +374,11 @@ Drivers and Sensors
 
 * Serial
 
+  * Extended Cypress PSoC-6 SCB[uart] driver to support interrupts.
+
 * SPI
+
+  * Added Cypress PSoC-6 SCB[spi] driver.
 
 * Timer
 
@@ -346,6 +412,13 @@ Build and Infrastructure
 * Devicetree
 
   - :c:macro:`DT_COMPAT_GET_ANY_STATUS_OKAY`: new macro
+
+* West
+
+  * Improve bossac runner.  Added legacy mode option into extended SAM-BA
+    bootloader selection.  This extends compatibility between Zephyr and
+    some Arduino IDE bootloaders.
+
 
 Libraries / Subsystems
 **********************
