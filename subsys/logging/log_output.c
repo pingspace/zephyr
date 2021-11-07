@@ -14,6 +14,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+/* Special condition for including RTC related functionalities */
+#if defined(CONFIG_COUNTER) && defined(CONFIG_SOC_SERIES_STM32H7X)
+#include "stm32h7xx_ll_rtc.h"
+#endif
+
 #define LOG_COLOR_CODE_DEFAULT "\x1B[0m"
 #define LOG_COLOR_CODE_RED     "\x1B[1;31m"
 #define LOG_COLOR_CODE_YELLOW  "\x1B[1;33m"
@@ -174,6 +179,31 @@ static int timestamp_print(const struct log_output *output,
 	if (!format) {
 		length = print_formatted(output, "[%08lu] ", timestamp);
 	} else if (freq != 0U) {
+#if defined(CONFIG_COUNTER) && defined(CONFIG_SOC_SERIES_STM32H7X)
+		/* If RTC is enabled, lets just use the real clock time for timestamping the logs.*/
+		uint32_t rtc_date, rtc_time;
+		char time_str[sizeof("1970-01-01T00:00:00")];
+		struct tm now_tm;
+
+		/* Read time and date registers */
+		rtc_time = LL_RTC_TIME_Get(RTC);
+		rtc_date = LL_RTC_DATE_Get(RTC);
+
+		now_tm.tm_year =
+			100 + __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_YEAR(rtc_date));
+		/* tm_mon allowed values are 0-11 */
+		now_tm.tm_mon =
+			__LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_MONTH(rtc_date)) - 1;
+		now_tm.tm_mday = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_DAY(rtc_date));
+
+		now_tm.tm_hour = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_HOUR(rtc_time));
+		now_tm.tm_min = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_MINUTE(rtc_time));
+		now_tm.tm_sec = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_SECOND(rtc_time));
+
+		strftime(time_str, sizeof(time_str), "%FT%T", &now_tm);
+		length = print_formatted(output, "[%s]", time_str);
+
+#else /*if defined(CONFIG_COUNTER) && defined(CONFIG_SOC_SERIES_STM32H7X)*/
 		uint32_t total_seconds;
 		uint32_t remainder;
 		uint32_t seconds;
@@ -218,6 +248,7 @@ static int timestamp_print(const struct log_output *output,
 						 "[%02d:%02d:%02d.%03d,%03d] ",
 						 hours, mins, seconds, ms, us);
 		}
+#endif /*if defined(CONFIG_COUNTER) && defined(CONFIG_SOC_SERIES_STM32H7X)*/
 	} else {
 		length = 0;
 	}
